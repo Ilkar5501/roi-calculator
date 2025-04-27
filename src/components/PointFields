@@ -1,0 +1,24 @@
+// src/components/PointFields.jsx
+import React from 'react';
+
+export default function PointFields({ values, onChange }) {
+  const categories = [
+    'Hotels','Vacation','RentalCars',
+    'Flights','Dining','All'
+  ];
+  return (
+    <fieldset>
+      <legend>Point Multipliers</legend>
+      {categories.map(cat=>(
+        <div key={cat}>
+          <label>{cat}</label>
+          <input
+            type="number" step="0.1"
+            value={values[cat]||0}
+            onChange={e=>onChange(cat, +e.target.value)}
+          />
+        </div>
+      ))}
+    </fieldset>
+  );
+}
