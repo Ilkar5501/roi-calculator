@@ -17,14 +17,13 @@ function App() {
   const [annualSpend, setAnnualSpend] = useState(
     Array(5).fill({ Generic: 6000 })
   );
-  const [annualFee, setAnnualFee] = useState(95);
   const [waivedYears, setWaivedYears] = useState(new Set([0]));
-  const [categories, setCategories] = useState([]); // holds card configs
+  const [cards, setCards] = useState([]); // holds card configs
   const [dollarPerPoint, setDollarPerPoint] = useState(0.017);
 
   // ─── Handlers ─────────────────────────────────────────────────────
   const addCard = card => {
-    setCategories(prev => [
+    setCards(prev => [
       ...prev,
       { ...card, cashRates: {}, pointRates: {}, welcomeBonuses: [] }
     ]);
@@ -44,41 +43,48 @@ function App() {
     });
   };
 
-  // ─── Compute ROI Series ────────────────────────────────────────────
+  // ─── Compute ROI Series per card ───────────────────────────────────
+  // data = [{ year: 1, 'Chase Sapphire': 4.5, 'Citi Double Cash': 3.2 }, ...]
   const data = useMemo(() => {
-    let cum = 0;
-    return Array.from({ length: years }, (_, y) => {
-      const row = annualSpend[y] || {};
-      const yearSpend = Object.values(row).reduce((a, b) => a + b, 0);
-      cum += yearSpend;
+    // initialize array of years
+    const arr = Array.from({ length: years }, (_, y) => ({ year: y + 1 }));
 
-      // sum across all cards
-      let totalNet = 0;
-      categories.forEach(card => {
-        const { cashRates, pointRates, welcomeBonuses } = card;
-        // points & cashback
+    cards.forEach(card => {
+      let cum = 0;
+      const key = card.name;
+      arr.forEach((obj, y) => {
+        const row = annualSpend[y] || {};
+        const yearSpend = Object.values(row).reduce((a, b) => a + b, 0);
+        cum += yearSpend;
+
+        // calculate points + cashback for this card
         let pts = 0, cb = 0;
         Object.entries(row).forEach(([cat, amt]) => {
-          pts += (pointRates[cat] || 0) * amt;
-          cb  += (cashRates[cat] || 0) * amt;
+          pts += (card.pointRates[cat] || 0) * amt;
+          cb  += (card.cashRates[cat] || 0) * amt;
         });
         const ptsValue = pts * dollarPerPoint;
-        // bonuses
+
+        // apply welcome bonus if threshold crossed
         let bonusVal = 0;
-        welcomeBonuses.forEach(({ threshold, points, cash }) => {
+        card.welcomeBonuses.forEach(({ threshold, points, cash }) => {
           const prev = cum - yearSpend;
           if (prev < threshold && cum >= threshold) {
             bonusVal += points * dollarPerPoint + cash;
           }
         });
-        const fee = waivedYears.has(y) ? 0 : card.annualFee;
-        totalNet += ptsValue + cb + bonusVal - fee;
-      });
 
-      const ROI = yearSpend > 0 ? (totalNet / yearSpend) * 100 : 0;
-      return { year: y + 1, ROI: Number(ROI.toFixed(2)) };
+        // subtract fee if not waived this year
+        const fee = waivedYears.has(y) ? 0 : card.annualFee;
+        const net = ptsValue + cb + bonusVal - fee;
+        const ROI = yearSpend > 0 ? (net / yearSpend) * 100 : 0;
+
+        obj[key] = Number(ROI.toFixed(2));
+      });
     });
-  }, [years, annualSpend, categories, waivedYears, annualFee, dollarPerPoint]);
+
+    return arr;
+  }, [years, annualSpend, cards, waivedYears, dollarPerPoint]);
 
   return (
     <div className="App">
@@ -97,7 +103,7 @@ function App() {
         <CardForm onAdd={addCard} />
 
         {/* Dynamic Card Configuration */}
-        {categories.map((card, i) => (
+        {cards.map((card, i) => (
           <motion.div
             key={i}
             initial={{ opacity: 0, x: -10 }}
@@ -110,7 +116,7 @@ function App() {
               <CashbackFields
                 values={card.cashRates}
                 onChange={(cat, val) => {
-                  setCategories(prev => {
+                  setCards(prev => {
                     const copy = [...prev];
                     copy[i].cashRates = { ...copy[i].cashRates, [cat]: val };
                     return copy;
@@ -121,7 +127,7 @@ function App() {
               <PointFields
                 values={card.pointRates}
                 onChange={(cat, val) => {
-                  setCategories(prev => {
+                  setCards(prev => {
                     const copy = [...prev];
                     copy[i].pointRates = { ...copy[i].pointRates, [cat]: val };
                     return copy;
@@ -130,7 +136,7 @@ function App() {
               />
             )}
             <BonusFields onAdd={bonus => {
-              setCategories(prev => {
+              setCards(prev => {
                 const copy = [...prev];
                 copy[i].welcomeBonuses = [...copy[i].welcomeBonuses, bonus];
                 return copy;
@@ -139,22 +145,24 @@ function App() {
           </motion.div>
         ))}
 
-        {/* ROI Chart */}
+        {/* ROI Chart with one line per card */}
         <div className="chart-wrapper">
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={data} padding={{ right: 20 }}>
+            <LineChart data={data} margin={{ right: 20 }}>
               <XAxis dataKey="year" stroke="#888" />
               <YAxis unit="%" stroke="#888" />
-              <Tooltip formatter={value => `${value.toFixed(2)}%`} />
+              <Tooltip formatter={v => `${v.toFixed(2)}%`} />
               <Legend />
-              <Line
-                dataKey="ROI"
-                stroke="#ffd700"
-                isAnimationActive
-                animationDuration={800}
-                animationEasing="ease-out"
-                dot={false}
-              />
+              {cards.map((card, idx) => (
+                <Line
+                  key={card.name}
+                  dataKey={card.name}
+                  stroke={['#8884d8','#82ca9d','#ffc658','#d0ed57'][idx % 4]}
+                  dot={false}
+                  isAnimationActive
+                  animationDuration={800}
+                />
+              ))}
             </LineChart>
           </ResponsiveContainer>
         </div>
