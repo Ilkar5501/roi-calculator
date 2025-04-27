@@ -36,3 +36,23 @@
     transform: rotate(360deg);
   }
 }
+
+/* ── Custom Styles ── */
+
+/* Grey out the “other” fieldset */
+.card-config.cash   fieldset.point-fields,
+.card-config.point  fieldset.cashback-fields {
+  opacity: 0.5;
+  pointer-events: none; /* prevents clicks on greyed-out fields */
+}
+
+/* Animated buttons */
+button {
+  transition: transform 0.2s ease-out;
+}
+button:hover {
+  transform: scale(1.05);
+}
+button:active {
+  transform: scale(0.95);
+}
