@@ -1,0 +1,24 @@
+// src/components/CashbackFields.jsx
+import React from 'react';
+
+export default function CashbackFields({ values, onChange }) {
+  const categories = [
+    'Grocery', 'Dining', 'Entertainment',
+    'Streaming','Gym','Drugstore','Rent','Rotational','All'
+  ];
+  return (
+    <fieldset>
+      <legend>Cashback Rates</legend>
+      {categories.map(cat=>(
+        <div key={cat}>
+          <label>{cat}</label>
+          <input
+            type="number" step="0.01"
+            value={values[cat]||0}
+            onChange={e=>onChange(cat, +e.target.value)}
+          />
+        </div>
+      ))}
+    </fieldset>
+  );
+}
