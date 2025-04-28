@@ -1,5 +1,6 @@
 // src/components/CardForm.jsx
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function CardForm({ onAdd }) {
   const [name, setName] = useState('');
@@ -11,36 +12,56 @@ export default function CardForm({ onAdd }) {
     e.preventDefault();
     if (!name || !type) return alert('Name and type are required');
     onAdd({ name, type, fee, waivedYears });
-    // reset
-    setName(''); setType(''); setFee(0); setWaivedYears(new Set());
+    // reset fields
+    setName('');
+    setType('');
+    setFee(0);
+    setWaivedYears(new Set());
   };
 
   return (
     <form onSubmit={handleSubmit} className="card-form">
       <div>
         <label>Card Name</label>
-        <input value={name} onChange={e => setName(e.target.value)} required/>
+        <input
+          value={name}
+          onChange={e => setName(e.target.value)}
+          required
+        />
       </div>
+
       <div>
         <label>Type</label>
-        <select value={type} onChange={e=>setType(e.target.value)} required>
+        <select
+          value={type}
+          onChange={e => setType(e.target.value)}
+          required
+        >
           <option value="" disabled>Select…</option>
           <option value="cash">Cashback</option>
-          <option value="points">Point</option>
+          <option value="points">Points</option>
         </select>
       </div>
+
       <div>
         <label>Annual Fee</label>
         <input
           type="number"
           value={fee}
-          onChange={e=>setFee(+e.target.value)}
+          onChange={e => setFee(+e.target.value)}
         />
       </div>
-      {/* waivedYears UI omitted for brevity */}
-      <button type="submit" disabled={!name||!type}>
+
+      {/* waivedYears UI goes here if you’ve added it */}
+
+      <motion.button
+        type="submit"
+        disabled={!name || !type}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
         Add Card
-      </button>
+      </motion.button>
     </form>
   );
 }
