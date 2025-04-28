@@ -1,5 +1,6 @@
 // src/components/BonusFields.jsx
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 
 export default function BonusFields({ onAdd }) {
   const [threshold, setThreshold] = useState(0);
@@ -19,25 +20,35 @@ export default function BonusFields({ onAdd }) {
       <div>
         <label>Spend Threshold</label>
         <input
-          type="number" value={threshold}
+          type="number"
+          value={threshold}
           onChange={e => setThreshold(+e.target.value)}
         />
       </div>
       <div>
         <label>Bonus Points</label>
         <input
-          type="number" value={points}
+          type="number"
+          value={points}
           onChange={e => setPoints(+e.target.value)}
         />
       </div>
       <div>
         <label>Bonus Cash ($)</label>
         <input
-          type="number" step="0.01" value={cash}
+          type="number"
+          step="0.01"
+          value={cash}
           onChange={e => setCash(+e.target.value)}
         />
       </div>
-      <button type="submit">Add Bonus</button>
+      <motion.button
+        type="submit"
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        Add Bonus
+      </motion.button>
     </form>
   );
 }
