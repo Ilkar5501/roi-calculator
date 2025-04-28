@@ -12,16 +12,13 @@
     "react-dom": "^19.1.0",
     "react-scripts": "5.0.1",
     "web-vitals": "^2.1.4",
-    "recharts": "^2.5.0",
+    "recharts": "^2.5.0"
   },
   "scripts": {
-  // 1) Build your React app (called automatically after npm install)
-  "postinstall": "npm run build",
-  // 2) Run your Express server to serve the built files
-  "start": "node server.js",
-  // 3) Keep the build command around (used locally too)
-  "build": "react-scripts build"
-},
+    "postinstall": "npm run build",
+    "start": "node server.js",
+    "build": "react-scripts build"
+  },
   "eslintConfig": {
     "extends": [
       "react-app",
